@@ -3,7 +3,7 @@ package org.usfirst.frc.team384.robot;
 public class Constants {
 
 	/** which Talon on CANBus */
-	public static final int kTalonID = 6;
+	//public static final int kTalonID = 6;
 
 	/**
 	 * How many sensor units per rotation. Using CTRE Magnetic Encoder.
@@ -40,5 +40,7 @@ public class Constants {
 	 * Motor deadband, set to 1%.
 	 */
 	public static final double kNeutralDeadband = 0.01;
+	
+	public static final boolean kRightMotorInvert = true;
 
 }

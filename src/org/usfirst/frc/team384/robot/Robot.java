@@ -37,10 +37,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Robot extends IterativeRobot {
 
 	/** The Talon we want to motion profile. */
-	TalonSRX _talon = new TalonSRX(Constants.kTalonID);
+	TalonSRX leftFrontMotor = new TalonSRX(6);
+	TalonSRX rightFrontMotor = new TalonSRX(12);
+	
 
 	/** some example logic on how one can manage an MP */
-	MotionProfileExample _example = new MotionProfileExample(_talon);
+	MotionProfileExample leftProfile = new MotionProfileExample(leftFrontMotor);
+	MotionProfileExample rightProfile = new MotionProfileExample(rightFrontMotor);
 
 	/** joystick for testing */
 	Joystick _joy = new Joystick(0);
@@ -55,25 +58,38 @@ public class Robot extends IterativeRobot {
 	/** run once after booting/enter-disable */
 	public void disabledInit() {
 
-		_talon.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
-		_talon.setSensorPhase(true); /* keep sensor and motor in phase */
-		_talon.configNeutralDeadband(Constants.kNeutralDeadband, Constants.kTimeoutMs);
+		leftFrontMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
+		leftFrontMotor.setSensorPhase(true); /* keep sensor and motor in phase */
+		leftFrontMotor.configNeutralDeadband(Constants.kNeutralDeadband, Constants.kTimeoutMs);
+		
+		rightFrontMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
+		rightFrontMotor.setSensorPhase(true); /* keep sensor and motor in phase */
+		rightFrontMotor.setInverted(Constants.kRightMotorInvert);
+		rightFrontMotor.configNeutralDeadband(Constants.kNeutralDeadband, Constants.kTimeoutMs);
 
-		_talon.config_kF(0, 0.076, Constants.kTimeoutMs);
-		_talon.config_kP(0, 2.000, Constants.kTimeoutMs);
-		_talon.config_kI(0, 0.0, Constants.kTimeoutMs);
-		_talon.config_kD(0, 20.0, Constants.kTimeoutMs);
+		leftFrontMotor.config_kF(0, 0.076, Constants.kTimeoutMs);
+		leftFrontMotor.config_kP(0, 2.000, Constants.kTimeoutMs);
+		leftFrontMotor.config_kI(0, 0.0, Constants.kTimeoutMs);
+		leftFrontMotor.config_kD(0, 20.0, Constants.kTimeoutMs);
+		
+		rightFrontMotor.config_kF(0, 0.076, Constants.kTimeoutMs);
+		rightFrontMotor.config_kP(0, 2.000, Constants.kTimeoutMs);
+		rightFrontMotor.config_kI(0, 0.0, Constants.kTimeoutMs);
+		rightFrontMotor.config_kD(0, 20.0, Constants.kTimeoutMs);
 
 		/* Our profile uses 10ms timing */
-		_talon.configMotionProfileTrajectoryPeriod(10, Constants.kTimeoutMs); 
+		leftFrontMotor.configMotionProfileTrajectoryPeriod(10, Constants.kTimeoutMs);
+		rightFrontMotor.configMotionProfileTrajectoryPeriod(10, Constants.kTimeoutMs);
 		/*
 		 * status 10 provides the trajectory target for motion profile AND
 		 * motion magic
 		 */
-		_talon.setStatusFramePeriod(StatusFrameEnhanced.Status_10_MotionMagic, 10, Constants.kTimeoutMs);
+		leftFrontMotor.setStatusFramePeriod(StatusFrameEnhanced.Status_10_MotionMagic, 10, Constants.kTimeoutMs);
+		rightFrontMotor.setStatusFramePeriod(StatusFrameEnhanced.Status_10_MotionMagic, 10, Constants.kTimeoutMs);
 
 		// zero the encoder (dlc)
-		_talon.getSensorCollection().setQuadraturePosition(0, 0);
+		leftFrontMotor.getSensorCollection().setQuadraturePosition(0, 0);
+		rightFrontMotor.getSensorCollection().setQuadraturePosition(0, 0);
 	}
 
 	/** function is called periodically during operator control */
@@ -90,7 +106,8 @@ public class Robot extends IterativeRobot {
 		 * call this periodically, and catch the output. Only apply it if user
 		 * wants to run MP.
 		 */
-		_example.control();
+		leftProfile.control();
+		rightProfile.control();
 
 		/* Check button 5 (top left shoulder on the logitech gamead). */
 		if (btns[5] == false) {
@@ -101,9 +118,11 @@ public class Robot extends IterativeRobot {
 			 */
 
 			/* button5 is off so straight drive */
-			_talon.set(ControlMode.PercentOutput, leftYjoystick);
+			leftFrontMotor.set(ControlMode.PercentOutput, leftYjoystick);
+			rightFrontMotor.set(ControlMode.PercentOutput, leftYjoystick);
 
-			_example.reset();
+			leftProfile.reset();
+			rightProfile.reset();
 		} else {
 			/*
 			 * Button5 is held down so switch to motion profile control mode =>
@@ -111,9 +130,11 @@ public class Robot extends IterativeRobot {
 			 * no-press to press, pass a "true" once to MotionProfileControl.
 			 */
 
-			SetValueMotionProfile setOutput = _example.getSetValue();
+			SetValueMotionProfile setLeftOutput = leftProfile.getSetValue();
+			SetValueMotionProfile setRightOutput = rightProfile.getSetValue();
 
-			_talon.set(ControlMode.MotionProfile, setOutput.value);
+			leftFrontMotor.set(ControlMode.MotionProfile, setLeftOutput.value);
+			rightFrontMotor.set(ControlMode.MotionProfile, setRightOutput.value);
 
 			/*
 			 * if btn is pressed and was not pressed last time, In other words
@@ -124,7 +145,8 @@ public class Robot extends IterativeRobot {
 				/* user just tapped button 6 */
 
 				// --- We could start an MP if MP isn't already running ----//
-				_example.startMotionProfile();
+				leftProfile.startMotionProfile();
+				rightProfile.startMotionProfile();
 			}
 		}
 
@@ -133,7 +155,8 @@ public class Robot extends IterativeRobot {
 			_btnsLast[i] = btns[i];
 
 
-		SmartDashboard.putNumber("Left encoder position: ", _talon.getSelectedSensorPosition(0));
+		SmartDashboard.putNumber("Left encoder position: ", leftFrontMotor.getSelectedSensorPosition(0));
+		SmartDashboard.putNumber("Right encoder position: ", rightFrontMotor.getSelectedSensorPosition(0));
 	}
 
 	/** function is called periodically during disable */
@@ -144,8 +167,10 @@ public class Robot extends IterativeRobot {
 		 * doesn't just continue doing what it was doing before. BUT if that's
 		 * what the application/testing requires than modify this accordingly
 		 */
-		_talon.set(ControlMode.PercentOutput, 0);
+		leftFrontMotor.set(ControlMode.PercentOutput, 0);
+		rightFrontMotor.set(ControlMode.PercentOutput, 0);
 		/* clear our buffer and put everything into a known state */
-		_example.reset();
+		leftProfile.reset();
+		rightProfile.reset();
 	}
 }
