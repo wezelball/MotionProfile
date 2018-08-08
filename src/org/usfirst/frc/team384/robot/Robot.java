@@ -36,9 +36,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Robot extends IterativeRobot {
 
-	/** The Talon we want to motion profile. */
+	/** Define the talon motors  */
 	TalonSRX leftFrontMotor = new TalonSRX(6);
 	TalonSRX rightFrontMotor = new TalonSRX(12);
+	// Follower rear motors
+	TalonSRX rightRearMotor = new TalonSRX(8);
+	TalonSRX leftRearMotor = new TalonSRX(2);
 	
 
 	/** some example logic on how one can manage an MP */
@@ -90,6 +93,14 @@ public class Robot extends IterativeRobot {
 		// zero the encoder (dlc)
 		leftFrontMotor.getSensorCollection().setQuadraturePosition(0, 0);
 		rightFrontMotor.getSensorCollection().setQuadraturePosition(0, 0);
+		
+		// Set up follower mode for slave rear motor talons
+		rightRearMotor.follow(rightFrontMotor);
+		leftRearMotor.follow(leftFrontMotor);
+		
+		// The follower motors may need to be inverted
+		rightRearMotor.setInverted(true);
+		leftRearMotor.setInverted(false);
 	}
 
 	/** function is called periodically during operator control */
