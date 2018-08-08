@@ -101,6 +101,14 @@ public class Robot extends IterativeRobot {
 		// The follower motors may need to be inverted
 		rightRearMotor.setInverted(true);
 		leftRearMotor.setInverted(false);
+		
+		/*
+		 * Here I am equating the motion profile to a particular side of the drivetrain.
+		 * That will allow selective loading of motion profiles.
+		 * 
+		 */
+		leftProfile.setDriveSideLeft();
+		rightProfile.setDriveSideRight();
 	}
 
 	/** function is called periodically during operator control */

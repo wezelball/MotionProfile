@@ -87,6 +87,13 @@ public class MotionProfileExample {
 	 */
 	private static final int kNumLoopsTimeout = 10;
 
+	/*
+	 * Which drive are we loading points for? 
+	 */
+	private boolean _driveSideLeft = true;
+	private boolean _driveSideRight = false;
+	
+	
 	/**
 	 * Lets create a periodic task to funnel our trajectory points into our talon.
 	 * It doesn't need to be very accurate, just needs to keep pace with the motion
@@ -263,9 +270,21 @@ public class MotionProfileExample {
 		return retval;
 	}
 	/** Start filling the MPs to all of the involved Talons. */
+	/*
+	 *  jumper - this is where points are read from the GeneratedMotionProfile class.
+	 *  I need to have 2 sets of points that represent a left and right drivetrain, and 
+	 *  selectively load them.
+	 *  
+	 *   For now, i'll create 2 classes, GeneratedMotionProfileLeft.java and 
+	 *   GeneratedMotionProfileRight.java.  I'll use the spreadsheet provided with this
+	 *   example program to make sure that one side is different from the other
+	 */
 	private void startFilling() {
-		/* since this example only has one talon, just update that one */
-		startFilling(GeneratedMotionProfile.Points, GeneratedMotionProfile.kNumPoints);
+		/* Select which side to fill */
+		if(_driveSideLeft)
+			startFilling(GeneratedMotionProfileLeft.Points, GeneratedMotionProfileLeft.kNumPoints);
+		if(_driveSideRight)
+			startFilling(GeneratedMotionProfileRight.Points, GeneratedMotionProfileRight.kNumPoints);
 	}
 
 	private void startFilling(double[][] profile, int totalCnt) {
@@ -330,5 +349,18 @@ public class MotionProfileExample {
 	 */
 	SetValueMotionProfile getSetValue() {
 		return _setValue;
+	}
+	
+	/*
+	 * Set the drive side for the motion profile, so that it knows which points to load
+	 */
+	void setDriveSideLeft()	{
+		_driveSideLeft = true;
+		_driveSideRight = false;
+	}
+	
+	void setDriveSideRight()	{
+		_driveSideLeft = false;
+		_driveSideRight = true;
 	}
 }
